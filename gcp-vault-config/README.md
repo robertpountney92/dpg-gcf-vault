@@ -1,5 +1,7 @@
 ### Configure GCP service accounts and Vault server
 
+
+
 This README will provide you with the building blocks (aka Terraform stanzas) required to configure our Vault server with data to be retrieved by a serverless cloud functoin. You will write your configuration by adding the stanzas in this README to `main.tf` configuration file.
 
 To begin we will query the `google_client_config` data source. This will give us access to vaules specific to the Google Cloud provider. We have provided our credentials for Google Cloud as environment variables, so adding this data source allows us to access those vaules within our configuration without explictly defining them as `variable` blocks.
@@ -35,7 +37,7 @@ resource "google_project_iam_binding" "vault-verifier-iam" {
   role    = "roles/iam.serviceAccountUser"
 
   members = [
-    google_service_account.vault-verifier.email,
+    "serviceAccount:${google_service_account.vault-verifier.email}"
   ]
 }
 ```

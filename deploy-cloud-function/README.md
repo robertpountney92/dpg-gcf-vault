@@ -6,6 +6,24 @@ We must set additional enviornment variable to be provided the Cloud Function. W
 
 Following this we can form our `main.tf` configuration file that will be used to deploy our Google Cloud Function.
 
+Create variiable within the configuration to take on the vaule assigned to our environment variable `TF_VAR_VAULT_ADDR`.
+```hcl
+# Vaule of this variable is set through TF_VAR_VAULT_ADDR env var
+variable "VAULT_ADDR" {}
+```
+
+Use remote state data source to retrived service account email address outputtted from our previous Terraform configuration located in seperate directory.
+```hcl
+# Retrive service account email outputtted from other terraform config
+data "terraform_remote_state" "gcp-vault-config" {
+  backend = "local"
+
+  config = {
+    path = "../gcp-vault-config/terraform.tfstate"
+  }
+}
+```
+
 In Terraform we must package our source code into a zip file in order to be deployed.
 ```hcl
 # Deploy Google Cloud Function
@@ -52,7 +70,18 @@ resource "google_cloudfunctions_function" "apikey-function" {
 }
 ```
 
+Define an output for the HTTP endpoint we can use to trigger our function.
+```hcl
+# Output endpoint to trigger Cloud Funcion
+output "http-endpoint" {
+  value = google_cloudfunctions_function.apikey-function.https_trigger_url
+}
+```
+
 Deploy Google Cloud Function 
 
     terraform init
     terraform apply -auto-approve
+
+Invoke Cloud Funtion
+curl -X POST "https://us-central1-rob-second-project.cloudfunctions.net/apikey" -H "Content-Type:application/json" --data '{"name":"Keyboard Cat"}'
